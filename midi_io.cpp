@@ -51,47 +51,6 @@ MIDI_io::~MIDI_io()
 } // ~MIDI_io()
 
 
-long MIDI_io::get_currenttime()
-{
-  unsigned long secdiff,usecdiff;
-
-  gettimeofday(&tv,&tz);
-  secdiff= (tv.tv_sec - tv_zero.tv_sec) * 1000000/ RESOLUTION;
-  usecdiff= (tv.tv_usec - tv_zero.tv_usec) / RESOLUTION;
-  return secdiff+usecdiff;
-} // get_currenttime()
-
-
-void MIDI_io::reset_timebase()
-{
-  gettimeofday(&tv_zero,&tz); // reset tv_zero
-} // reset_timebase()
-
-
-bool MIDI_io::read_event(PmEvent& event)
-{
-PmError result;
-PmEvent localevent;
-
-  while(!active) usleep(10000); // wait for init to complete
-
-  result = Pm_Poll(midi_in);
-  if(result > 0) {
-    Pm_Read(midi_in,&localevent,1);
-    event=localevent;
-    event.timestamp=get_currenttime();
-    return true; // read an event
-  }
-  return false; // nothing read
-} // read_event()
-
-
-void MIDI_io::write_event(PmEvent* event)
-{
-  Pm_Write(midi_out,event,1);
-} // write_event()
-
-
 int MIDI_io::list_devices()
 {
 const PmDeviceInfo *info;
@@ -104,9 +63,9 @@ const PmDeviceInfo *info;
   for(int d=0;d<Pm_CountDevices();d++)
   {
     info = Pm_GetDeviceInfo(d);
+    if(info->input > 0) cout << "IN from: ";
+    if(info->output > 0) cout << "OUT to:  ";
     cout << "Device " << d << "\t" << info->name;
-    if(info->input > 0) cout << " IN";
-    if(info->output > 0) cout << " OUT";
     cout << endl;
   } // for
 
@@ -188,6 +147,54 @@ const PmDeviceInfo *info;
 
   active = true;
 } // initialise()
+
+
+long MIDI_io::get_currenttime()
+{
+  unsigned long secdiff,usecdiff;
+
+  gettimeofday(&tv,&tz);
+  secdiff= (tv.tv_sec - tv_zero.tv_sec) * 1000000/ RESOLUTION;
+  usecdiff= (tv.tv_usec - tv_zero.tv_usec) / RESOLUTION;
+  return secdiff+usecdiff;
+} // get_currenttime()
+
+
+void MIDI_io::reset_timebase()
+{
+  gettimeofday(&tv_zero,&tz); // reset tv_zero
+} // reset_timebase()
+
+
+void MIDI_io::set_input_filter(unsigned int filters)
+{
+  Pm_SetFilter(midi_in,filters);
+} // set_input_filter()
+
+
+bool MIDI_io::read_event(PmEvent& event)
+{
+PmError result;
+PmEvent localevent;
+
+  while(!active) usleep(10000); // wait for init to complete
+
+  result = Pm_Poll(midi_in);
+  if(result > 0) {
+    Pm_Read(midi_in,&localevent,1);
+    event=localevent;
+    event.timestamp=get_currenttime();
+    return true; // read an event
+  }
+  return false; // nothing read
+} // read_event()
+
+
+void MIDI_io::write_event(PmEvent* event)
+{
+  Pm_Write(midi_out,event,1);
+} // write_event()
+
 
 
 void MIDI_io::finalise()

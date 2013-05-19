@@ -65,6 +65,7 @@ public:
   void initialise();
   long get_currenttime();
   void reset_timebase();
+  void set_input_filter(unsigned int filters);
   bool read_event(PmEvent&);
   void write_event(PmEvent*);
   void finalise();
