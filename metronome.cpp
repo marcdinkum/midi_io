@@ -80,11 +80,10 @@ long next_timestamp=0;
                ((status) & 0xFF))
   */
   PmEvent event;
-  event.message=Pm_Message(0x90,58,100); // note: drum track!
+  event.message=Pm_Message(0x99,58,100); // note: drum track!
   event.timestamp=0;
   while(metro_bpm < 140)
   {
-    cout << midi_io.get_currenttime() << endl;
     if(midi_io.get_currenttime() >= next_timestamp){
       midi_io.write_event(&event);
       next_timestamp=midi_io.get_currenttime()+qnote_duration(metro_bpm);
