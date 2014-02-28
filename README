@@ -1,0 +1,4 @@
+Easy-to-use C++ abstraction of the portMIDI library.
+
+This code uses blocking I/O instead of the default callback method.
+
