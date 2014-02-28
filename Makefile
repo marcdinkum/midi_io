@@ -8,8 +8,9 @@ LDFLAGS= -L/usr/local/lib -lportmidi -lpthread -lm
 
 SEQOBJ = midi_io.o sequencer.o
 RECOBJ = midi_io.o recorder.o
+METROOBJ = midi_io.o metronome.o
 
-all: sequencer recorder
+all: sequencer recorder metronome
 
 sequencer: $(SEQOBJ)
 	$(CPP) -o $@ $(CFLAGS) $(SEQOBJ) $(LDFLAGS)
@@ -17,9 +18,12 @@ sequencer: $(SEQOBJ)
 recorder: $(RECOBJ)
 	$(CPP) -o $@ $(CFLAGS) $(RECOBJ) $(LDFLAGS)
 
+metronome: $(METROOBJ)
+	$(CPP) -o $@ $(CFLAGS) $(METROOBJ) $(LDFLAGS)
+
 
 .cpp.o:
-	$(CC) -c $< $(CFLAGS)
+	$(CPP) -c $< $(CFLAGS)
 
 clean:
 	rm -f *.o

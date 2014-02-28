@@ -1,5 +1,5 @@
 /**********************************************************************
-*          Copyright (c) 2008, Hogeschool voor de Kunsten Utrecht
+*          Copyright (c) 2014, Hogeschool voor de Kunsten Utrecht
 *                      Hilversum, the Netherlands
 *                          All rights reserved
 ***********************************************************************
@@ -25,7 +25,7 @@
 *		   Wrapper class for portmidi
 *
 *
-*  Author        : Marc_G
+*  Author        : Marc Groenewegen
 *  E-mail        : marcg@dinkum.nl
 *
 **********************************************************************/
@@ -91,7 +91,7 @@ void MIDI_io::set_output_device(int device)
  * Don't make any calls to PortMidi from this thread once
  *  the midi thread begins.
  */
-void MIDI_io::initialise()
+int MIDI_io::initialise()
 {
 const PmDeviceInfo *info;
 
@@ -106,8 +106,7 @@ const PmDeviceInfo *info;
   if(input_device == -1) input_device=Pm_GetDefaultInputDeviceID();
   info = Pm_GetDeviceInfo(input_device);
   if (info == NULL) {
-      cout << "Could not open input device " <<  input_device << endl;
-      exit(0);
+    return ERROR_OPEN_INPUT;
   }
   cout << "Opening input device " << info->interf << "," <<  info->name << endl;
 
@@ -118,9 +117,11 @@ const PmDeviceInfo *info;
 	       NULL,
 	       (void *)NULL); // void * time_info
 
-  // Filter everything but note events
-  Pm_SetFilter(midi_in, PM_FILT_REALTIME | PM_FILT_AFTERTOUCH |
-    PM_FILT_PROGRAM | PM_FILT_PITCHBEND | PM_FILT_CONTROL);
+  /*
+    Pm_SetFilter(midi_in, PM_FILT_REALTIME | PM_FILT_AFTERTOUCH |
+      PM_FILT_PROGRAM | PM_FILT_PITCHBEND | PM_FILT_CONTROL);
+  */
+  Pm_SetFilter(midi_in,PM_FILT_REALTIME); // only block realtime msg
 
 
   /*
@@ -129,8 +130,7 @@ const PmDeviceInfo *info;
   if(output_device == -1) output_device=Pm_GetDefaultOutputDeviceID();
   info = Pm_GetDeviceInfo(output_device);
   if (info == NULL) {
-      cout << "Could not open output device << " << output_device << endl;
-      exit(0);
+    return ERROR_OPEN_OUTPUT;
   }
   cout << "Opening output device " << info->interf << "," <<  info->name << endl;
 
@@ -146,6 +146,8 @@ const PmDeviceInfo *info;
 
 
   active = true;
+
+  return 0;
 } // initialise()
 
 

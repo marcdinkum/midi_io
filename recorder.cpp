@@ -71,6 +71,15 @@ unsigned char cmd,channel,data1,data2;
   // reset filters: accept all events
   midi_io.set_input_filter(0);
 
+  cout << "\nUse MIDI keys play, rec, stop, rewind and loop\n";
+/*
+  play	b0 f 75 7f
+  rec	b0 f 76 7f
+  stop	b0 f 74 7f
+  rewind	b0 f 72 7f
+  loop	b0 f 71 7f
+*/
+
   while(true)
   {
     event_read = midi_io.read_event(event);
@@ -99,20 +108,11 @@ unsigned char cmd,channel,data1,data2;
     else usleep(10000);
   } // while
 
-/*
-  play	b0 f 75 7f
-  rec	b0 f 76 7f
-  stop	b0 f 74 7f
-  rewind	b0 f 72 7f
-  loop	b0 f 71 7f
-*/
-
   /*
    * Play back what we've just captured
    */
   cout << "Now playing\n";
-  while(looping)
-  {
+  do {
     event_iterator=eventlist.begin();
     midi_io.reset_timebase();
     while(event_iterator != eventlist.end()){
@@ -120,11 +120,12 @@ unsigned char cmd,channel,data1,data2;
 	// It's time to play
 	event = *event_iterator;
 	midi_io.write_event(&event);
+	event_iterator->timestamp*=0.9;
 	event_iterator++;
       } // if
 	else usleep(10000);
     } // while
-  } // while looping
+  } while(looping);
 
   midi_io.finalise();
   return 0;
