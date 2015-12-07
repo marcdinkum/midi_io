@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2008, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*                Copyright (c) 2015, Marc Groenewegen
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -18,10 +18,10 @@
 *  If not, see <http://www.gnu.org/licenses/>.
 ***********************************************************************
 *
-*  File name     : recorder.cpp
+*  File name     : uncomposer.cpp
 *  System name   : MIDI I/O
 * 
-*  Description   : Demo program for wrapper class for portmidi
+*  Description   : Capture MIDI input and store in a MIDI file
 *
 *
 *  Author        : Marc_G
@@ -32,59 +32,61 @@
 #include <iostream>
 #include <vector>
 #include "midi_io.h"
+#include "midifile.h"
+
 
 using namespace std;
 
+/*
+  TODO
+
+  - metronome and time signature
+  - ports specification on command line
+  - program change, pitch bend etc. ook opslaan
+
+*/
 
 int main(int argc, char **argv)
 {
-MIDI_io midi_io;
-PmEvent event;
-vector<PmEvent> eventlist;
-vector<PmEvent>::iterator event_iterator;
+MIDI_io midi_io; // PortMidi wrapper instance
+PmEvent event; // PortMidi event
+MidiFile midifile;
+char midiEvent[3];
+char *filename="test.midi";
 bool event_read;
-int input_device=0,output_device=0;
+int input_device=0;
 bool use_default_devices=false;
-bool recording=false;
-bool looping=false;
+unsigned long prev_timestamp=0,new_timestamp=0,delay=0;
 unsigned char cmd,channel,data1,data2;
 
   midi_io.list_devices();
 
-  if(argc>1 && (string(argv[1]) == "-d")) {
-    use_default_devices=true;
-    cout << "Using default devices\n";
-  }
-  else cout << "For using default devices specify -d\n";
+  midifile.set_bpm(120);
+
+  if(argc>1) filename=argv[1];
+  midifile.open(filename);
 
   if(!use_default_devices){
     cout << "\nGive input device number: ";
     cin >> input_device;
     midi_io.set_input_device(input_device);
-    cout << "Give output device number: ";
-    cin >> output_device;
-    midi_io.set_output_device(output_device);
   }
 
   midi_io.initialise();
 
+  cout << endl << endl << "Writing output to " << filename <<
+    " after receiving lower E or higher E" << endl << endl;
+
   // reset filters: accept all events
   midi_io.set_input_filter(0);
 
-  cout << "\nUse MIDI keys play, rec, stop, rewind and loop\n";
-/*
-  play	b0 f 75 7f
-  rec	b0 f 76 7f
-  stop	b0 f 74 7f
-  rewind	b0 f 72 7f
-  loop	b0 f 71 7f
-*/
+  midifile.write_header();
+  midifile.start_track();
 
   while(true)
   {
     event_read = midi_io.read_event(event);
     if(event_read){
-      //midi_io.write_event(&event); // copy to output
       cmd=Pm_MessageStatus(event.message)&0xf0;
       channel=Pm_MessageStatus(event.message)&0xf;
       data1=Pm_MessageData1(event.message);
@@ -92,47 +94,25 @@ unsigned char cmd,channel,data1,data2;
       cout << (hex) << (int) cmd << " " << (int) channel << " " << (int)
               data1 << " " << (int) data1 << endl;
       // only store note_on and note_off
-      if(recording && (cmd == 0x90 || cmd == 0x80)) eventlist.push_back(event);
-      if(cmd & 0x80) {
-        cout << "Now recording\n";
-	recording=true;
-        midi_io.reset_timebase();
-      }
-      if(cmd == 0xb0 && data1 == 0x76) {
-        cout << "Now recording\n";
-	recording=true;
-        midi_io.reset_timebase();
-      }
-      if(cmd == 0xb0 && data1 == 0x75) break;
-      if(cmd == 0xb0 && data1 == 0x74) break;
-      if(cmd == 0xb0 && data1 == 0x71){
-        looping=true;
-        break;
-      }
+      if(data1==28 || data1==100) break; // magic notes to end the recording
+      if(cmd == 0x90 || cmd == 0x80){
+         midiEvent[0]=cmd|channel;
+         midiEvent[1]=data1;
+         midiEvent[2]=data2;
+         new_timestamp=midi_io.get_currenttime();
+	 delay=new_timestamp-prev_timestamp;
+	 midifile.write_event(delay*10,midiEvent,3); // Why *10 ??
+	 prev_timestamp=new_timestamp;
+      } // if note on/off
     }
-    else usleep(10000);
+    else usleep(2000);
   } // while
 
-  /*
-   * Play back what we've just captured
-   */
-  cout << "Now playing\n";
-  do {
-    event_iterator=eventlist.begin();
-    midi_io.reset_timebase();
-    while(event_iterator != eventlist.end()){
-      if(midi_io.get_currenttime() >= event_iterator->timestamp){
-	// It's time to play
-	event = *event_iterator;
-	midi_io.write_event(&event);
-	event_iterator->timestamp*=0.9;
-	event_iterator++;
-      } // if
-	else usleep(10000);
-    } // while
-  } while(looping);
+  midifile.end_track();
+  midifile.close();
 
   midi_io.finalise();
+
   return 0;
 }
 

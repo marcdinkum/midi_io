@@ -156,7 +156,7 @@ long MIDI_io::get_currenttime()
   unsigned long secdiff,usecdiff;
 
   gettimeofday(&tv,&tz);
-  secdiff= (tv.tv_sec - tv_zero.tv_sec) * 1000000/ RESOLUTION;
+  secdiff= (tv.tv_sec - tv_zero.tv_sec) * 1000000 / RESOLUTION;
   usecdiff= (tv.tv_usec - tv_zero.tv_usec) / RESOLUTION;
   return secdiff+usecdiff;
 } // get_currenttime()
