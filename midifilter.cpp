@@ -46,7 +46,6 @@ PmEvent event;
 bool event_read;
 int input_device=0,output_device=0;
 bool use_default_devices=false;
-unsigned char cmd;
 
   midi_io.list_devices();
 
@@ -66,6 +65,7 @@ unsigned char cmd;
   }
 
   midi_io.initialise();
+  midi_io.set_input_filter(PM_FILT_PROGRAM); // block program change
 
   cout << "Starting..." << endl;
 
@@ -75,9 +75,7 @@ unsigned char cmd;
   while(true){
     event_read = midi_io.read_event(event);
     if(event_read){
-      cmd=Pm_MessageStatus(event.message)&0xf0;
-      // let only note on/off pass thru
-      if((cmd == 0x90 || cmd == 0x80)) midi_io.write_event(&event);
+      midi_io.write_event(&event);
     }
     else usleep(10000);
   } // while

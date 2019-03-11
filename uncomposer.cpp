@@ -30,12 +30,12 @@
 **********************************************************************/
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include "midi_io.h"
 #include "midifile.h"
 
 
-using namespace std;
 
 /*
   TODO
@@ -52,33 +52,33 @@ MIDI_io midi_io; // PortMidi wrapper instance
 PmEvent event; // PortMidi event
 MidiFile midifile;
 char midiEvent[3];
-char *filename="test.midi";
+std::string filename="uncomposer.midi";
 bool event_read;
 int input_device=0;
 bool use_default_devices=false;
 unsigned long prev_timestamp=0,new_timestamp=0,delay=0;
-unsigned char cmd,channel,data1,data2;
+unsigned char cmd,data1,data2;
 
   midi_io.list_devices();
 
   midifile.set_bpm(120);
 
   if(argc>1) filename=argv[1];
-  midifile.open(filename);
+  midifile.open(filename.c_str());
 
   if(!use_default_devices){
-    cout << "\nGive input device number: ";
+    std::cout << "\nGive input device number: ";
     cin >> input_device;
     midi_io.set_input_device(input_device);
   }
 
   midi_io.initialise();
 
-  cout << endl << endl << "Writing output to " << filename <<
-    " after receiving lower E or higher E" << endl << endl;
+  std::cout << std::endl << std::endl << "Writing output to " << filename <<
+    " after receiving lower E or higher E" << std::endl << std::endl;
 
   // reset filters: accept all events
-  midi_io.set_input_filter(0);
+  midi_io.set_input_filter(PM_FILT_REALTIME|PM_FILT_PROGRAM|PM_FILT_PITCHBEND|PM_FILT_AFTERTOUCH);
 
   midifile.write_header();
   midifile.start_track();
@@ -87,16 +87,19 @@ unsigned char cmd,channel,data1,data2;
   {
     event_read = midi_io.read_event(event);
     if(event_read){
-      cmd=Pm_MessageStatus(event.message)&0xf0;
-      channel=Pm_MessageStatus(event.message)&0xf;
+      cmd=Pm_MessageStatus(event.message);
       data1=Pm_MessageData1(event.message);
       data2=Pm_MessageData2(event.message);
-      cout << (hex) << (int) cmd << " " << (int) channel << " " << (int)
-              data1 << " " << (int) data1 << endl;
+      std::cout << (hex) << (int) cmd << " " <<
+        (int) data1 << " " << (int) data1 << std::endl;
       // only store note_on and note_off
-      if(data1==28 || data1==100) break; // magic notes to end the recording
-      if(cmd == 0x90 || cmd == 0x80){
-         midiEvent[0]=cmd|channel;
+      if((cmd&0xf0)==0x90 && data1==28){
+        event_read = midi_io.read_event(event); // fetch the note off
+        usleep(2000);
+        break; // magic note to end the recording
+      }
+      if((cmd&0xf0) == 0x90 || (cmd&0xf0) == 0x80){
+         midiEvent[0]=cmd;
          midiEvent[1]=data1;
          midiEvent[2]=data2;
          new_timestamp=midi_io.get_currenttime();
@@ -104,6 +107,15 @@ unsigned char cmd,channel,data1,data2;
 	 midifile.write_event(delay*10,midiEvent,3); // Why *10 ??
 	 prev_timestamp=new_timestamp;
       } // if note on/off
+      if((cmd&0xf0) == 0xb0){ // control change
+         midiEvent[0]=cmd;
+         midiEvent[1]=data1;
+         midiEvent[2]=data2;
+         new_timestamp=midi_io.get_currenttime();
+	 delay=new_timestamp-prev_timestamp;
+	 midifile.write_event(delay*10,midiEvent,3); // Why *10 ??
+	 prev_timestamp=new_timestamp;
+      }
     }
     else usleep(2000);
   } // while
