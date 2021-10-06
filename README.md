@@ -1,9 +1,10 @@
 Easy-to-use C++ abstraction of the PortMidi C library.
 
-This code uses blocking I/O instead of the default callback method.
+This code uses blocking I/O instead of the default callback method as this
+is easier to explain to beginning programmers.
 
 PortMidi is a cross-platform C library for MIDI IO
-created by Roger Dannenberg
+created by Roger B. Dannenberg
 https://github.com/rbdannenberg/portmidi
 
 ---
