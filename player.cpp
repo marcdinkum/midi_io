@@ -3,7 +3,6 @@
 #include <vector>
 #include "midi_io.h"
 
-using namespace std;
 
 
 int main(int argc, char **argv)
@@ -19,12 +18,12 @@ bool use_default_devices=false;
 
   if(argc>1 && (string(argv[1]) == "-d")) {
     use_default_devices=true;
-    cout << "Using default devices\n";
+    std::cout << "Using default devices\n";
   }
-  else cout << "For using default devices specify -d\n";
+  else std::cout << "For using default devices specify -d\n";
 
   if(!use_default_devices){
-    cout << "Give output device number: ";
+    std::cout << "Give output device number: ";
     cin >> output_device;
     midi_io.set_output_device(output_device);
   }

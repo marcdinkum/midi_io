@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2014, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -22,20 +22,20 @@
 *  System name   : MIDI I/O
 * 
 *  Description   : MIDI input and output implementation file
-*		   Wrapper class for portmidi
-*
+*		   C++ wrapper class for PortMidi
 *
 *  Author        : Marc Groenewegen
 *  E-mail        : marcg@dinkum.nl
+*
+*
+*  Based on PortMidi, a cross-platform C library for MIDI IO
+*  https://github.com/rbdannenberg/portmidi
 *
 **********************************************************************/
 
 #include <iostream>
 #include <cstdlib>
 #include "midi_io.h"
-
-using namespace std;
-
 
 
 MIDI_io::MIDI_io()
@@ -56,17 +56,17 @@ int MIDI_io::list_devices()
 const PmDeviceInfo *info;
 
   if(Pm_CountDevices() == 0){
-    cout << "No devices found" << endl;
+    std::cout << "No devices found" << std::endl;
     return 0;
   } // if
 
   for(int d=0;d<Pm_CountDevices();d++)
   {
     info = Pm_GetDeviceInfo(d);
-    if(info->input > 0) cout << "IN from: ";
-    if(info->output > 0) cout << "OUT to:  ";
-    cout << "Device " << d << "\t" << info->name;
-    cout << endl;
+    if(info->input > 0) std::cout << "IN from: ";
+    if(info->output > 0) std::cout << "OUT to:  ";
+    std::cout << "Device " << d << "\t" << info->name;
+    std::cout << std::endl;
   } // for
 
   return Pm_CountDevices();
@@ -108,7 +108,7 @@ const PmDeviceInfo *info;
   if (info == NULL) {
     return ERROR_OPEN_INPUT;
   }
-  cout << "Opening input device " << info->interf << "," <<  info->name << endl;
+  std::cout << "Opening input device " << info->interf << "," << info->name << std::endl;
 
   Pm_OpenInput(&midi_in, 
 	       input_device, 
@@ -132,7 +132,7 @@ const PmDeviceInfo *info;
   if (info == NULL) {
     return ERROR_OPEN_OUTPUT;
   }
-  cout << "Opening output device " << info->interf << "," <<  info->name << endl;
+  std::cout << "Opening output device " << info->interf << "," << info->name << std::endl;
 
   /* use zero latency because we want output to be immediate */
   Pm_OpenOutput(&midi_out, 

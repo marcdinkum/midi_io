@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2013, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,6 @@
 #include <cstdlib>
 #include "midi_io.h"
 
-using namespace std;
 
 double qnote_duration(double bpm)
 {
@@ -57,7 +56,7 @@ unsigned char default_note=37;
 unsigned int beats_per_bar=4;
 unsigned int beat=0;
 
-  cout << "metronome [bpm] [bpm_increment] [beats-per-bar] [accent-note] [default-note]\n\n\n";
+  std::cout << "metronome [bpm] [bpm_increment] [beats-per-bar] [accent-note] [default-note]\n\n\n";
 
   if(argc > 1){
     bpm=atof(argv[1]);
@@ -78,7 +77,7 @@ unsigned int beat=0;
   midi_io.list_devices();
 
   if(!use_default_devices){
-    cout << "Give output device number: ";
+    std::cout << "Give output device number: ";
     cin >> output_device;
     midi_io.set_output_device(output_device);
   }
@@ -96,7 +95,7 @@ unsigned int beat=0;
       midi_io.write_event(&event);
       next_timestamp=midi_io.get_currenttime()+qnote_duration(bpm);
       bpm += bpm_increment;
-      cout << "Beat # " << beat << " BPM: " << bpm << endl;
+      std::cout << "Beat # " << beat << " BPM: " << bpm << endl;
       ++beat;
     }
     else usleep(10000);

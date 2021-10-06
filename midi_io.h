@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2014, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,14 @@
 *  System name   : MIDI I/O
 * 
 *  Description   : MIDI input and output header file
-*		   Wrapper class for portmidi
-*
+*		   C++ wrapper class for PortMidi
 *
 *  Author        : Marc Groenewegen
 *  E-mail        : marcg@dinkum.nl
+*
+*
+*  Based on PortMidi, a cross-platform C library for MIDI IO
+*  https://github.com/rbdannenberg/portmidi
 *
 **********************************************************************/
 
@@ -52,6 +55,7 @@ using namespace std;
  *
  * Due to this, the programmer must take care that no more than
  *  ONE INSTANCE of this class is created !
+ * Applying the Singleton Pattern would be useful.
  *
  *  NB: static members must be declared outside the class.
  *
@@ -76,10 +80,11 @@ private:
   bool active; // signals that MIDI processing is running
   PmStream *midi_in;
   PmStream *midi_out;
-  // I don't understand PM's time stuff so I'll make my own
+  int input_device,output_device;
+
+  // offer real time clock function
   struct timeval tv_zero,tv;
   struct timezone tz;
-  int input_device,output_device;
 };
 
 #endif // _MIDI_IO_H_

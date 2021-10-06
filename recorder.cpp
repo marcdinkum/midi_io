@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2008, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,6 @@
 #include <vector>
 #include "midi_io.h"
 
-using namespace std;
-
 
 int main(int argc, char **argv)
 {
@@ -47,21 +45,21 @@ int input_device=0,output_device=0;
 bool use_default_devices=false;
 bool recording=false;
 bool looping=false;
-unsigned char cmd,channel,data1,data2;
+unsigned char cmd,channel,data1;
 
   midi_io.list_devices();
 
   if(argc>1 && (string(argv[1]) == "-d")) {
     use_default_devices=true;
-    cout << "Using default devices\n";
+    std::cout << "Using default devices\n";
   }
-  else cout << "For using default devices specify -d\n";
+  else std::cout << "For using default devices specify -d\n";
 
   if(!use_default_devices){
-    cout << "\nGive input device number: ";
+    std::cout << "\nGive input device number: ";
     cin >> input_device;
     midi_io.set_input_device(input_device);
-    cout << "Give output device number: ";
+    std::cout << "Give output device number: ";
     cin >> output_device;
     midi_io.set_output_device(output_device);
   }
@@ -71,7 +69,7 @@ unsigned char cmd,channel,data1,data2;
   // reset filters: accept all events
   midi_io.set_input_filter(0);
 
-  cout << "\nUse MIDI keys play, rec, stop, rewind and loop\n";
+  std::cout << "\nUse MIDI keys play, rec, stop, rewind and loop\n";
 /*
   play	b0 f 75 7f
   rec	b0 f 76 7f
@@ -88,18 +86,17 @@ unsigned char cmd,channel,data1,data2;
       cmd=Pm_MessageStatus(event.message)&0xf0;
       channel=Pm_MessageStatus(event.message)&0xf;
       data1=Pm_MessageData1(event.message);
-      data2=Pm_MessageData2(event.message);
-      cout << (hex) << (int) cmd << " " << (int) channel << " " << (int)
+      std::cout << (hex) << (int) cmd << " " << (int) channel << " " << (int)
               data1 << " " << (int) data1 << endl;
       // only store note_on and note_off
       if(recording && (cmd == 0x90 || cmd == 0x80)) eventlist.push_back(event);
       if(cmd & 0x80) {
-        cout << "Now recording\n";
+        std::cout << "Now recording\n";
 	recording=true;
         midi_io.reset_timebase();
       }
       if(cmd == 0xb0 && data1 == 0x76) {
-        cout << "Now recording\n";
+        std::cout << "Now recording\n";
 	recording=true;
         midi_io.reset_timebase();
       }
@@ -116,7 +113,7 @@ unsigned char cmd,channel,data1,data2;
   /*
    * Play back what we've just captured
    */
-  cout << "Now playing\n";
+  std::cout << "Now playing\n";
   do {
     event_iterator=eventlist.begin();
     midi_io.reset_timebase();

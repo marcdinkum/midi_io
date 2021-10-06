@@ -4,8 +4,6 @@ CFLAGS = -Wall
 LDFLAGS= -L/usr/local/lib -lportmidi -lpthread -lm -llo
 
 
-#MACLIB = -framework CoreMIDI -framework CoreFoundation -framework CoreAudio
-
 SEQOBJ = midi_io.o sequencer.o
 PLAYEROBJ = midi_io.o player.o
 RECOBJ = midi_io.o recorder.o

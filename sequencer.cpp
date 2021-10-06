@@ -1,6 +1,6 @@
 /**********************************************************************
-*          Copyright (c) 2008, Hogeschool voor de Kunsten Utrecht
-*                      Hilversum, the Netherlands
+*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
 *  This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,6 @@
 #include <vector>
 #include "midi_io.h"
 
-using namespace std;
-
 
 int main(int argc, char **argv)
 {
@@ -51,15 +49,15 @@ bool use_default_devices=false;
 
   if(argc>1 && (string(argv[1]) == "-d")) {
     use_default_devices=true;
-    cout << "Using default devices\n";
+    std::cout << "Using default devices\n";
   }
-  else cout << "For using default devices specify -d\n";
+  else std::cout << "For using default devices specify -d\n";
 
   if(!use_default_devices){
-    cout << "\nGive input device number: ";
+    std::cout << "\nGive input device number: ";
     cin >> input_device;
     midi_io.set_input_device(input_device);
-    cout << "Give output device number: ";
+    std::cout << "Give output device number: ";
     cin >> output_device;
     midi_io.set_output_device(output_device);
   }
