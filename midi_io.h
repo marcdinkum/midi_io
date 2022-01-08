@@ -29,7 +29,7 @@
 *
 *
 *  Based on PortMidi, a cross-platform C library for MIDI IO
-*  https://github.com/rbdannenberg/portmidi
+*  https://github.com/PortMidi/portmidi
 *
 **********************************************************************/
 
