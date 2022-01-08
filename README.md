@@ -5,7 +5,7 @@ is easier to explain to beginning programmers.
 
 PortMidi is a cross-platform C library for MIDI IO
 created by Roger B. Dannenberg
-https://github.com/rbdannenberg/portmidi
+https://github.com/PortMidi/portmidi
 
 ---
 
