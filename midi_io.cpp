@@ -1,5 +1,5 @@
 /**********************************************************************
-*          Copyright (c) 2021, Hogeschool voor de Kunsten Utrecht
+*          Copyright (c) 2022, Hogeschool voor de Kunsten Utrecht
 *                      Utrecht, the Netherlands
 *                          All rights reserved
 ***********************************************************************
@@ -29,7 +29,7 @@
 *
 *
 *  Based on PortMidi, a cross-platform C library for MIDI IO
-*  https://github.com/rbdannenberg/portmidi
+*  https://github.com/PortMidi/portmidi
 *
 **********************************************************************/
 
@@ -55,10 +55,10 @@ int MIDI_io::list_devices()
 {
 const PmDeviceInfo *info;
 
-  if(Pm_CountDevices() == 0){
-    std::cout << "No devices found" << std::endl;
-    return 0;
-  } // if
+  /*
+   * Show devices for selection.
+   * Device numbers range from 0 to Pm_CountDevices() - 1
+   */
 
   for(int d=0;d<Pm_CountDevices();d++)
   {
@@ -66,6 +66,7 @@ const PmDeviceInfo *info;
     if(info->input > 0) std::cout << "IN from: ";
     if(info->output > 0) std::cout << "OUT to:  ";
     std::cout << "Device " << d << "\t" << info->name;
+    if(info->is_virtual > 0) std::cout << " (virtual)";
     std::cout << std::endl;
   } // for
 
@@ -75,14 +76,66 @@ const PmDeviceInfo *info;
 
 void MIDI_io::set_input_device(int device)
 {
-  input_device=device;
+  if(device < 0 || device >= Pm_CountDevices()){
+    std::cout << "Input device number out of range" << std::endl;
+  }
+  else input_device=device;
 } // set_input_device()
 
 
 void MIDI_io::set_output_device(int device)
 {
-  output_device=device;
+  if(device < 0 || device >= Pm_CountDevices()){
+    std::cout << "Output device number out of range" << std::endl;
+  }
+  else output_device=device;
 } // set_output_device()
+
+
+/*
+ * Virtual devices can be created independent of exernal devices
+ */
+void MIDI_io::create_virtual_input_device(std::string name)
+{
+  Pm_CreateVirtualInput(name.c_str(),
+		NULL, // interf
+		NULL); // deviceInfo
+} // create_virtual_input_device()
+
+
+void MIDI_io::create_virtual_output_device(std::string name)
+{
+  Pm_CreateVirtualOutput(name.c_str(),
+	      NULL, // interf
+	      NULL); // deviceInfo
+} // create_virtual_output_device()
+
+
+
+/*
+ * Input filtering: block certain incoming messages
+ *
+ * This can only be performed on a valid input port. The function checks this.
+ *
+ * Useful switches (see the portmidi documentation for more):
+ *  PM_FILT_REALTIME
+ *  PM_FILT_AFTERTOUCH
+ *  PM_FILT_PROGRAM 
+ *  PM_FILT_PITCHBEND 
+ *  PM_FILT_CONTROL
+ *  PM_FILT_RESET
+ *
+ * These switches can be or'ed 
+ */
+void MIDI_io::set_input_filter(unsigned int filters)
+{
+  const PmDeviceInfo *info;
+  info = Pm_GetDeviceInfo(input_device);
+  if(info->input == 0) return;
+
+  Pm_SetFilter(midi_in,filters);
+} // set_input_filter()
+
 
 
 /*
@@ -103,47 +156,40 @@ const PmDeviceInfo *info;
   /*
    * INPUT device
    */
-  if(input_device == -1) input_device=Pm_GetDefaultInputDeviceID();
-  info = Pm_GetDeviceInfo(input_device);
-  if (info == NULL) {
-    return ERROR_OPEN_INPUT;
-  }
-  std::cout << "Opening input device " << info->interf << "," << info->name << std::endl;
+  if(input_device >= 0){
+    info = Pm_GetDeviceInfo(input_device);
+    if (info == NULL) {
+      return ERROR_OPEN_INPUT;
+    }
+    std::cout << "Opening input device " << info->interf << "," << info->name << std::endl;
 
-  Pm_OpenInput(&midi_in, 
-	       input_device, 
-	       NULL, // driver info
-	       0, // use default input size
-	       NULL,
-	       (void *)NULL); // void * time_info
-
-  /*
-    Pm_SetFilter(midi_in, PM_FILT_REALTIME | PM_FILT_AFTERTOUCH |
-      PM_FILT_PROGRAM | PM_FILT_PITCHBEND | PM_FILT_CONTROL);
-  */
-  Pm_SetFilter(midi_in,PM_FILT_REALTIME); // only block realtime msg
-
+    Pm_OpenInput(&midi_in, // stream
+		 input_device, 
+		 NULL, // driver info
+		 0, // use default input size
+		 NULL, // time_proc
+		 (void *)NULL); // void * time_info
+  } // if input device was selected
 
   /*
    * OUTPUT device
    */
-  if(output_device == -1) output_device=Pm_GetDefaultOutputDeviceID();
-  info = Pm_GetDeviceInfo(output_device);
-  if (info == NULL) {
-    return ERROR_OPEN_OUTPUT;
-  }
-  std::cout << "Opening output device " << info->interf << "," << info->name << std::endl;
+  if(output_device >= 0){
+    info = Pm_GetDeviceInfo(output_device);
+    if (info == NULL) {
+      return ERROR_OPEN_OUTPUT;
+    }
+    std::cout << "Opening output device " << info->interf << "," << info->name << std::endl;
 
-  /* use zero latency because we want output to be immediate */
-  Pm_OpenOutput(&midi_out, 
-		output_device, 
-		NULL, // driver info
-		OUT_QUEUE_SIZE,
-		NULL, // PmTimeProcPtr time_proc
-		NULL, // void * time_info
-		0 // Latency
-		);
-
+    /* use zero latency because we want output to be immediate */
+    Pm_OpenOutput(&midi_out,  // stream
+		  output_device, 
+		  NULL, // driver info
+		  OUT_QUEUE_SIZE,
+		  NULL, // PmTimeProcPtr time_proc
+		  NULL, // void * time_info
+		  0); // Latency
+  } // if input device was selected
 
   active = true;
 
@@ -168,16 +214,12 @@ void MIDI_io::reset_timebase()
 } // reset_timebase()
 
 
-void MIDI_io::set_input_filter(unsigned int filters)
-{
-  Pm_SetFilter(midi_in,filters);
-} // set_input_filter()
-
-
 bool MIDI_io::read_event(PmEvent& event)
 {
 PmError result;
 PmEvent localevent;
+
+  if(input_device < 0) return false;
 
   while(!active) usleep(10000); // wait for init to complete
 
@@ -194,7 +236,8 @@ PmEvent localevent;
 
 void MIDI_io::write_event(PmEvent* event)
 {
-  Pm_Write(midi_out,event,1);
+  while(!active) usleep(10000); // wait for init to complete
+  if(output_device > 0) Pm_Write(midi_out,event,1);
 } // write_event()
 
 
@@ -206,8 +249,8 @@ void MIDI_io::finalise()
     /* At this point, midi thread is inactive and we need to shut down
      * the midi input and output
      */
-    Pm_Close(midi_in);
-    Pm_Close(midi_out);
+    if(input_device > 0) Pm_Close(midi_in);
+    if(output_device > 0) Pm_Close(midi_out);
     Pm_Terminate();    
 } // finalise()
 

@@ -42,27 +42,18 @@ vector<PmEvent> eventlist;
 vector<PmEvent>::iterator event_iterator;
 bool event_read;
 int input_device=0,output_device=0;
-bool use_default_devices=false;
 bool recording=false;
-bool looping=false;
+int loops=1;
 unsigned char cmd,channel,data1;
 
   midi_io.list_devices();
 
-  if(argc>1 && (string(argv[1]) == "-d")) {
-    use_default_devices=true;
-    std::cout << "Using default devices\n";
-  }
-  else std::cout << "For using default devices specify -d\n";
-
-  if(!use_default_devices){
-    std::cout << "\nGive input device number: ";
-    cin >> input_device;
-    midi_io.set_input_device(input_device);
-    std::cout << "Give output device number: ";
-    cin >> output_device;
-    midi_io.set_output_device(output_device);
-  }
+  std::cout << "\nGive input device number: ";
+  cin >> input_device;
+  midi_io.set_input_device(input_device);
+  std::cout << "Give output device number: ";
+  cin >> output_device;
+  midi_io.set_output_device(output_device);
 
   midi_io.initialise();
 
@@ -70,16 +61,20 @@ unsigned char cmd,channel,data1;
   midi_io.set_input_filter(0);
 
   std::cout << "\nUse MIDI keys play, rec, stop, rewind and loop\n";
-/*
-  play	b0 f 75 7f
-  rec	b0 f 76 7f
-  stop	b0 f 74 7f
-  rewind	b0 f 72 7f
-  loop	b0 f 71 7f
-*/
+  /*
+    play	b0 f 75 7f
+    rec		b0 f 76 7f
+    stop	b0 f 74 7f
+    rewind	b0 f 72 7f
+    loop	b0 f 71 7f
+  */
 
   while(true)
   {
+  midi_io.list_devices();
+  std::cout << std::endl;
+    usleep(1000000);
+    continue;
     event_read = midi_io.read_event(event);
     if(event_read){
       //midi_io.write_event(&event); // copy to output
@@ -92,18 +87,22 @@ unsigned char cmd,channel,data1;
       if(recording && (cmd == 0x90 || cmd == 0x80)) eventlist.push_back(event);
       if(cmd & 0x80) {
         std::cout << "Now recording\n";
-	recording=true;
+        recording=true;
         midi_io.reset_timebase();
       }
       if(cmd == 0xb0 && data1 == 0x76) {
         std::cout << "Now recording\n";
-	recording=true;
+        recording=true;
         midi_io.reset_timebase();
+      }
+      if(cmd == 0x80 && data1 == 48){
+        loops=20;
+        break; // FIXME test only
       }
       if(cmd == 0xb0 && data1 == 0x75) break;
       if(cmd == 0xb0 && data1 == 0x74) break;
       if(cmd == 0xb0 && data1 == 0x71){
-        looping=true;
+        loops=20;
         break;
       }
     }
@@ -111,7 +110,7 @@ unsigned char cmd,channel,data1;
   } // while
 
   /*
-   * Play back what we've just captured
+   * Play back what we've just captured, faster and faster
    */
   std::cout << "Now playing\n";
   do {
@@ -119,15 +118,16 @@ unsigned char cmd,channel,data1;
     midi_io.reset_timebase();
     while(event_iterator != eventlist.end()){
       if(midi_io.get_currenttime() >= event_iterator->timestamp){
-	// It's time to play
-	event = *event_iterator;
-	midi_io.write_event(&event);
-	event_iterator->timestamp*=0.9;
-	event_iterator++;
+        // It's time to play
+        event = *event_iterator;
+        midi_io.write_event(&event);
+        event_iterator->timestamp*=0.9;
+        event_iterator++;
       } // if
-	else usleep(10000);
+      else usleep(10000);
     } // while
-  } while(looping);
+    --loops;
+  } while(loops);
 
   midi_io.finalise();
   return 0;

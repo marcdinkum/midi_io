@@ -47,8 +47,7 @@ MIDI_io midi_io;
 vector<PmEvent> eventlist;
 vector<PmEvent>::iterator event_iterator;
 int output_device=0;
-bool use_default_devices=false;
-double bpm=60;
+double bpm=100;
 double bpm_increment=0;
 long next_timestamp=0;
 unsigned char accent_note=35;
@@ -56,7 +55,11 @@ unsigned char default_note=37;
 unsigned int beats_per_bar=4;
 unsigned int beat=0;
 
-  std::cout << "metronome [bpm] [bpm_increment] [beats-per-bar] [accent-note] [default-note]\n\n\n";
+  std::cout << "metronome [bpm " << bpm << "] " <<
+    "[bpm_increment " << bpm_increment << "] " <<
+    "[beats-per-bar " << beats_per_bar << "] " <<
+    "[accent-note " << (int)accent_note << "] " <<
+    "[default-note " << (int)default_note << "]" << std::endl << std::endl;
 
   if(argc > 1){
     bpm=atof(argv[1]);
@@ -74,20 +77,21 @@ unsigned int beat=0;
     default_note=atoi(argv[5]);
   }
 
+  midi_io.create_virtual_input_device("metronome");
+  midi_io.create_virtual_output_device("metronome");
+
   midi_io.list_devices();
 
-  if(!use_default_devices){
-    std::cout << "Give output device number: ";
-    cin >> output_device;
-    midi_io.set_output_device(output_device);
-  }
+  std::cout << "Give output device number: ";
+  cin >> output_device;
+  midi_io.set_output_device(output_device);
 
   midi_io.initialise();
   midi_io.reset_timebase();
 
   PmEvent event;
   event.timestamp=0;
-  while(bpm < 160)
+  while(bpm < 200)
   {
     if(midi_io.get_currenttime() >= next_timestamp){
       if(!(beat%beats_per_bar)) event.message=Pm_Message(0x99,accent_note,100);

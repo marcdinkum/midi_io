@@ -39,7 +39,7 @@
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h> // usleep
-#include "portmidi.h"
+#include <portmidi.h>
 
 using namespace std;
 
@@ -69,10 +69,12 @@ public:
   int list_devices();
   void set_input_device(int device);
   void set_output_device(int device);
+  void set_input_filter(unsigned int filters);
+  void create_virtual_input_device(std::string);
+  void create_virtual_output_device(std::string);
   int initialise();
   long get_currenttime();
   void reset_timebase();
-  void set_input_filter(unsigned int filters);
   bool read_event(PmEvent&);
   void write_event(PmEvent*);
   void finalise();
@@ -80,7 +82,8 @@ private:
   bool active; // signals that MIDI processing is running
   PmStream *midi_in;
   PmStream *midi_out;
-  int input_device,output_device;
+  int input_device; // id of the selected input device
+  int output_device; // id of the selected output device
 
   // offer real time clock function
   struct timeval tv_zero,tv;

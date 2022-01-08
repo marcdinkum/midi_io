@@ -47,7 +47,6 @@ MidiFile midifile;
 char midiEvent[3];
 bool event_read;
 int input_device=0;
-bool use_default_devices=false;
 unsigned long prev_timestamp=0,new_timestamp=0,delay=0;
 unsigned char cmd,data1,data2;
 
@@ -81,11 +80,9 @@ unsigned char cmd,data1,data2;
   midifile.set_bpm(120);
   midifile.open(filename.str().c_str());
 
-  if(!use_default_devices){
-    std::cout << "\nGive input device number: ";
-    cin >> input_device;
-    midi_io.set_input_device(input_device);
-  }
+  std::cout << "\nGive input device number: ";
+  cin >> input_device;
+  midi_io.set_input_device(input_device);
 
   midi_io.initialise();
 
