@@ -27,3 +27,13 @@ sequencer: simple MIDI sequencer
 metronome: a metronome with some optional parameters
     [bpm] [bpm_increment] [beats-per-bar] [accent-note] [default-note]
 
+
+# Virtual devices
+As of 2021 portmidi offers the possibility of creating virtual devices. Or
+to be more precise: named ports behaving like devices.
+
+Use cases
+- dynamically create MIDI ports within your own program, optionally to be
+  connected to by other applications as they become available
+- testing without the need for external devices
+

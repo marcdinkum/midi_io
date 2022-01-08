@@ -42,30 +42,20 @@ vector<PmEvent> eventlist;
 vector<PmEvent>::iterator event_iterator;
 bool event_read;
 int input_device=0,output_device=0;
-bool use_default_devices=false;
 
   midi_io.list_devices();
 
-
-  if(argc>1 && (string(argv[1]) == "-d")) {
-    use_default_devices=true;
-    std::cout << "Using default devices\n";
-  }
-  else std::cout << "For using default devices specify -d\n";
-
-  if(!use_default_devices){
-    std::cout << "\nGive input device number: ";
-    cin >> input_device;
-    midi_io.set_input_device(input_device);
-    std::cout << "Give output device number: ";
-    cin >> output_device;
-    midi_io.set_output_device(output_device);
-  }
+  std::cout << "\nGive input device number: ";
+  cin >> input_device;
+  midi_io.set_input_device(input_device);
+  std::cout << "Give output device number: ";
+  cin >> output_device;
+  midi_io.set_output_device(output_device);
 
   midi_io.initialise();
 
   /*
-   * Gather some realtime MIDI data
+   * Gather some realtime MIDI data for 10 seconds
    */
   while(midi_io.get_currenttime() < 10000){
     event_read = midi_io.read_event(event);
@@ -88,7 +78,7 @@ bool use_default_devices=false;
       midi_io.write_event(&event);
       event_iterator++;
     } // if
-      else usleep(10000);
+    else usleep(10000);
   } // while
 
   midi_io.finalise();

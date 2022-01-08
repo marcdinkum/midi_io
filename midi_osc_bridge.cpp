@@ -46,7 +46,6 @@ char midiEvent[3];
 std::string filename="uncomposer.midi";
 bool event_read;
 int input_device=0;
-bool use_default_devices=false;
 unsigned long prev_timestamp=0,new_timestamp=0,delay=0;
 unsigned char cmd,data1,data2;
 
@@ -60,11 +59,9 @@ unsigned char cmd,data1,data2;
   if(argc>1) filename=argv[1];
   midifile.open(filename.c_str());
 
-  if(!use_default_devices){
-    std::cout << "\nGive input device number: ";
-    cin >> input_device;
-    midi_io.set_input_device(input_device);
-  }
+  std::cout << "\nGive input device number: ";
+  cin >> input_device;
+  midi_io.set_input_device(input_device);
 
   midi_io.initialise();
 

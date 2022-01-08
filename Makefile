@@ -1,7 +1,7 @@
 CPP = g++
 CC = gcc
 CFLAGS = -Wall
-LDFLAGS= -L/usr/local/lib -lportmidi -lpthread -lm -llo
+LDFLAGS= -lportmidi -lpthread -lm -llo
 
 
 SEQOBJ = midi_io.o sequencer.o

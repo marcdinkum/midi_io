@@ -12,21 +12,14 @@ PmEvent event;
 vector<PmEvent> eventlist;
 vector<PmEvent>::iterator event_iterator;
 int output_device=0;
-bool use_default_devices=false;
+
+  midi_io.create_virtual_output_device("midiplaytest");
 
   midi_io.list_devices();
 
-  if(argc>1 && (string(argv[1]) == "-d")) {
-    use_default_devices=true;
-    std::cout << "Using default devices\n";
-  }
-  else std::cout << "For using default devices specify -d\n";
-
-  if(!use_default_devices){
-    std::cout << "Give output device number: ";
-    cin >> output_device;
-    midi_io.set_output_device(output_device);
-  }
+  std::cout << "Give output device number: ";
+  cin >> output_device;
+  midi_io.set_output_device(output_device);
 
   midi_io.initialise();
 
