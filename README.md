@@ -37,3 +37,10 @@ Use cases
   connected to by other applications as they become available
 - testing without the need for external devices
 
+If this version of PortMidi is not in your standard set of libraries you
+may want to clone or download the PortMidi repository and build it, which
+is quite easy using cmake.
+
+Instructions are in
+[README.md](https://github.com/PortMidi/portmidi/blob/master/README.md)
+
