@@ -77,7 +77,6 @@ unsigned int beat=0;
     default_note=atoi(argv[5]);
   }
 
-  midi_io.create_virtual_input_device("metronome");
   midi_io.create_virtual_output_device("metronome");
 
   midi_io.list_devices();

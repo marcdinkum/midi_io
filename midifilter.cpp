@@ -44,6 +44,9 @@ PmEvent event;
 bool event_read;
 int input_device=0,output_device=0;
 
+  midi_io.create_virtual_input_device("midifilter");
+  midi_io.create_virtual_output_device("midifilter");
+
   midi_io.list_devices();
 
   std::cout << "\nGive input device number: ";

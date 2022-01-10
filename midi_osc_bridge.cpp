@@ -52,6 +52,8 @@ unsigned char cmd,data1,data2;
 
   lo_address target = lo_address_new("localhost","8000"); // OSC
 
+  midi_io.create_virtual_input_device("MIDI_OSC_bridge");
+
   midi_io.list_devices();
 
   midifile.set_bpm(120);

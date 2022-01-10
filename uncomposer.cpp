@@ -50,8 +50,6 @@ int input_device=0;
 unsigned long prev_timestamp=0,new_timestamp=0,delay=0;
 unsigned char cmd,data1,data2;
 
-  midi_io.list_devices();
-
   // Use date and time for unique filename and track name
   time_t currenttime;
   struct tm *parsed_time; // a struct containing all values
@@ -79,6 +77,10 @@ unsigned char cmd,data1,data2;
 
   midifile.set_bpm(120);
   midifile.open(filename.str().c_str());
+
+  midi_io.create_virtual_input_device("uncomposer");
+
+  midi_io.list_devices();
 
   std::cout << "\nGive input device number: ";
   cin >> input_device;

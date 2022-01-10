@@ -46,6 +46,9 @@ bool recording=false;
 int loops=1;
 unsigned char cmd,channel,data1;
 
+  midi_io.create_virtual_input_device("midirecorder");
+  midi_io.create_virtual_output_device("midirecorder");
+
   midi_io.list_devices();
 
   std::cout << "\nGive input device number: ";
