@@ -3,8 +3,8 @@ Easy-to-use C++ abstraction of the PortMidi C library.
 This code uses blocking I/O instead of the default callback method as this
 is easier to explain to beginning programmers.
 
-PortMidi is a cross-platform C library for MIDI IO
-created by Roger B. Dannenberg
+PortMidi is a cross-platform C library for MIDI IO created by Roger B. Dannenberg
+
 https://github.com/PortMidi/portmidi
 
 ---
@@ -18,7 +18,7 @@ player: play a couple of MIDI messages to test your output
 
 recorder: records a bit of MIDI and plays it back afterwards
 
-uncomposer: records MIDI data as long as you don't hit a designated hardcoded note to signal you're done, then writes everything to a MIDI file containing the date and time
+uncomposer: records MIDI data as long as you don't hit a designated hardcoded note to signal you're done, then writes everything to a MIDI file with the date and time in the name of the file
 
 bridge: MIDI to OSC bridge (Open Sound Control, needs liblo)
 
@@ -29,7 +29,7 @@ metronome: a metronome with some optional parameters
 
 
 # Virtual devices
-As of 2021 portmidi offers the possibility of creating virtual devices. Or
+As of fall 2021 portmidi offers the possibility of creating virtual devices. Or
 to be more precise: named ports behaving like devices.
 
 Use cases
